@@ -14,6 +14,9 @@ class Version(object):
     def __init__(self, vstring):
         self.parse(vstring)
 
+    def __hash__(self):
+        return hash(self.vstring)
+
     def parse(self, vstring):
         if vstring is None:
             raise ValueError('Version string cannot be None')
@@ -31,8 +34,8 @@ class Version(object):
         if vstring == 'darga-5':
             vstring = '5.6.3'
 
-        components = filter(lambda x: x and x != '.',
-                            self.component_re.findall(vstring))
+        components = list(filter(lambda x: x and x != '.',
+                            self.component_re.findall(vstring)))
         # Check if we have a version suffix which denotes pre-release
         if components and components[-1].startswith('-'):
             self.suffix = components[-1][1:].split('-')    # Chop off the -
@@ -91,6 +94,37 @@ class Version(object):
 
     def __repr__(self):
         return '{}({})'.format(type(self).__name__, repr(self.vstring))
+
+    def __lt__(self, other):
+        try:
+            if not isinstance(other, type(self)):
+                other = Version(other)
+        except:
+            raise ValueError('Cannot compare Version to {}'.format(type(other).__name__))
+
+        if self == other:
+            return False
+        elif self == self.latest() or other == self.lowest():
+            return False
+        elif self == self.lowest() or other == self.latest():
+            return True
+        else:
+            result = self.version < other.version
+            if result != 0:
+                return result
+            # Use suffixes to decide
+            if self.suffix is None and other.suffix is None:
+                # No suffix, the same
+                return 0
+            elif self.suffix is None:
+                # This does not have suffix but the other does so this is "newer"
+                return 1
+            elif other.suffix is None:
+                # This one does have suffix and the other does not so this one is older
+                return -1
+            else:
+                # Both have suffixes, so do some math
+                return self.normalized_suffix < other.normalized_suffix
 
     def __cmp__(self, other):
         try:
