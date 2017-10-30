@@ -97,7 +97,7 @@ class Version(object):
         try:
             if not isinstance(other, type(self)):
                 other = Version(other)
-        except:
+        except Exception:
             raise ValueError('Cannot compare Version to {}'.format(type(other).__name__))
 
         if self == other:
@@ -128,7 +128,7 @@ class Version(object):
         try:
             if not isinstance(other, type(self)):
                 other = Version(other)
-        except:
+        except Exception:
             raise ValueError('Cannot compare Version to {}'.format(type(other).__name__))
 
         if self == other:
@@ -161,7 +161,7 @@ class Version(object):
                 other = Version(other)
             return (
                 self.version == other.version and self.normalized_suffix == other.normalized_suffix)
-        except:
+        except Exception:
             return False
 
     def __contains__(self, ver):
@@ -176,7 +176,7 @@ class Version(object):
         """
         try:
             return Version(ver).is_in_series(self)
-        except:
+        except Exception:
             return False
 
     def is_in_series(self, series):
