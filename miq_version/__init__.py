@@ -24,7 +24,12 @@ class Version(object):
             vstring = ".".join(map(str, vstring))
         elif vstring:
             vstring = str(vstring).strip()
-        if vstring in ('master', 'latest', 'upstream') or 'fine' in vstring or 'euwe' in vstring:
+        # TODO separate upstream versions
+        if any([
+                vstring in ('master', 'latest', 'upstream'),
+                'fine' in vstring,
+                'euwe' in vstring,
+                'gaprindashvili' in vstring]):
             vstring = 'master'
         # TODO These aren't used anywhere - remove?
         if vstring == 'darga-3':
@@ -99,7 +104,7 @@ class Version(object):
         try:
             if not isinstance(other, type(self)):
                 other = Version(other)
-        except:
+        except Exception:
             raise ValueError('Cannot compare Version to {}'.format(type(other).__name__))
 
         if self == other:
@@ -130,7 +135,7 @@ class Version(object):
         try:
             if not isinstance(other, type(self)):
                 other = Version(other)
-        except:
+        except Exception:
             raise ValueError('Cannot compare Version to {}'.format(type(other).__name__))
 
         if self == other:
@@ -163,7 +168,7 @@ class Version(object):
                 other = Version(other)
             return (
                 self.version == other.version and self.normalized_suffix == other.normalized_suffix)
-        except:
+        except Exception:
             return False
 
     def __contains__(self, ver):
@@ -178,7 +183,7 @@ class Version(object):
         """
         try:
             return Version(ver).is_in_series(self)
-        except:
+        except Exception:
             return False
 
     def is_in_series(self, series):
