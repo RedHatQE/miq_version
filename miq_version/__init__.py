@@ -31,6 +31,13 @@ class Version(object):
                 'euwe' in vstring,
                 'gaprindashvili' in vstring]):
             vstring = 'master'
+        # TODO These aren't used anywhere - remove?
+        if vstring == 'darga-3':
+            vstring = '5.6.1'
+        if vstring == 'darga-4.1':
+            vstring = '5.6.2'
+        if vstring == 'darga-5':
+            vstring = '5.6.3'
 
         components = list(filter(lambda x: x and x != '.',
                             self.component_re.findall(vstring)))
