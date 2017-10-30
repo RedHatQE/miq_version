@@ -24,15 +24,13 @@ class Version(object):
             vstring = ".".join(map(str, vstring))
         elif vstring:
             vstring = str(vstring).strip()
-        if vstring in ('master', 'latest', 'upstream') or 'fine' in vstring or 'euwe' in vstring:
+        # TODO separate upstream versions
+        if any([
+                vstring in ('master', 'latest', 'upstream'),
+                'fine' in vstring,
+                'euwe' in vstring,
+                'gaprindashvili' in vstring]):
             vstring = 'master'
-        # TODO These aren't used anywhere - remove?
-        if vstring == 'darga-3':
-            vstring = '5.6.1'
-        if vstring == 'darga-4.1':
-            vstring = '5.6.2'
-        if vstring == 'darga-5':
-            vstring = '5.6.3'
 
         components = list(filter(lambda x: x and x != '.',
                             self.component_re.findall(vstring)))
