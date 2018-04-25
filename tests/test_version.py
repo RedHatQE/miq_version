@@ -25,7 +25,14 @@ def test_version(v1, op, v2):
     v2 = Version(v2)
     if op == GT:
         assert v1 > v2
+        # exercise
+        assert v1 >= v2
     elif op == LT:
         assert v1 < v2
+        # exercise
+        assert v1 <= v2
     elif op == EQ:
         assert v1 == v2
+        # to exercise all
+        assert v1 <= v2
+        assert v1 >= v2
