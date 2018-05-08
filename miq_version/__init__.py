@@ -2,8 +2,10 @@ import re
 from cached_property import cached_property
 from collections import namedtuple
 from six import string_types
+from functools import total_ordering
 
 
+@total_ordering
 class Version(object):
     """Version class based on distutil.version.LooseVersion"""
     SUFFIXES = ('nightly', 'pre', 'alpha', 'beta', 'rc')
@@ -130,37 +132,6 @@ class Version(object):
             else:
                 # Both have suffixes, so do some math
                 return self.normalized_suffix < other.normalized_suffix
-
-    def __cmp__(self, other):
-        try:
-            if not isinstance(other, type(self)):
-                other = Version(other)
-        except Exception:
-            raise ValueError('Cannot compare Version to {}'.format(type(other).__name__))
-
-        if self == other:
-            return 0
-        elif self == self.latest() or other == self.lowest():
-            return 1
-        elif self == self.lowest() or other == self.latest():
-            return -1
-        else:
-            result = cmp(self.version, other.version)
-            if result != 0:
-                return result
-            # Use suffixes to decide
-            if self.suffix is None and other.suffix is None:
-                # No suffix, the same
-                return 0
-            elif self.suffix is None:
-                # This does not have suffix but the other does so this is "newer"
-                return 1
-            elif other.suffix is None:
-                # This one does have suffix and the other does not so this one is older
-                return -1
-            else:
-                # Both have suffixes, so do some math
-                return cmp(self.normalized_suffix, other.normalized_suffix)
 
     def __eq__(self, other):
         try:
