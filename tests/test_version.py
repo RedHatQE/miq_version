@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import pytest
 
-from miq_version import Version
+from miq_version import Version, TemplateName
 
 version_list = [
     Version('5.7.0.0'),
@@ -105,8 +105,7 @@ EQ = '=='
     ('1.2.3.4-beta', LT, '1.2.3.4'),
     ('1.2.3.4-beta1', GT, '1.2.3.4-beta'),
     ('1.2.3.4-beta1.1', GT, '1.2.3.4-beta1'),
-    ('1.2.3.4-alpha-nightly', GT, '1.2.3.4-alpha'),     # TODO: This one might be discussed
-])
+    ('1.2.3.4-alpha-nightly', GT, '1.2.3.4-alpha')])  # TODO: This one might be discussed
 def test_version(v1, op, v2):
     v1 = Version(v1)
     v2 = Version(v2)
@@ -127,3 +126,11 @@ def test_version(v1, op, v2):
 
 def test_version_list():
     assert sorted(version_list, reverse=True) == reverse_sorted_version
+
+
+@pytest.mark.parametrize(('tmp_name', 'ver_string'),
+                         [('miq-nightly-20180531', '20180531'),
+                          ('miq-fine-3-20171215', 'fine-3'),
+                          ('cfme-58403-20180220', '5.8.4.03')])
+def test_template_parsing(tmp_name, ver_string):
+    assert TemplateName.parse_template(tmp_name).version == ver_string
