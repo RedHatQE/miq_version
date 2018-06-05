@@ -116,19 +116,18 @@ class Version(object):
         elif self == self.lowest() or other == self.latest():
             return True
         else:
-            result = self.version < other.version
-            if result != 0:
-                return result
+            if self.version != other.version:
+                return self.version < other.version
             # Use suffixes to decide
             if self.suffix is None and other.suffix is None:
                 # No suffix, the same
-                return 0
+                return False
             elif self.suffix is None:
                 # This does not have suffix but the other does so this is "newer"
-                return 1
+                return False
             elif other.suffix is None:
                 # This one does have suffix and the other does not so this one is older
-                return -1
+                return True
             else:
                 # Both have suffixes, so do some math
                 return self.normalized_suffix < other.normalized_suffix
