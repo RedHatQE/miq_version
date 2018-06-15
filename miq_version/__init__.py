@@ -237,6 +237,8 @@ version_stream_product_mapping = {
         r'^cfme-(?P<ver>58\d{3})-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})']),
     '5.9': SPTuple('downstream-59z', '4.6', [
         r'^cfme-(?P<ver>59\d{3})-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})']),
+    '5.10': SPTuple('downstream-510z', '4.7', [
+        r'^cfme-(?P<ver>510\d{3})-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})']),
     'euwe': SPTuple('upstream-euwe', 'master', [
         r'^miq-(?P<ver>euwe[-\w]*?)-(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})',
         r'^miq-stable-(?P<ver>euwe[-\w]*?)-(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})']),
