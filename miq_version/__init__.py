@@ -417,9 +417,10 @@ class TemplateName(object):
                     if 'downstream' not in stream_tuple.stream:
                         dot_version = version
                     elif version.startswith('51'):
-                        dot_version = '{}.{}.{}'.format(version[0],
-                                                        version[1:3],
-                                                        version[3:])
+                        dot_version = '{}.{}.{}.{}'.format(version[0],
+                                                           version[1:3],
+                                                           version[3],
+                                                           version[4:])
                     else:
                         dot_version = '{}.{}.{}.{}'.format(version[0],
                                                            version[1],
