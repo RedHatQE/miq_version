@@ -222,23 +222,32 @@ TemplateInfo = namedtuple('TemplateInfo', ['group_name', 'datestamp', 'stream', 
 # Maps stream and product version to each app version
 version_stream_product_mapping = {
     '5.2': SPTuple('downstream-52z', '3.0', [
-        r'^cfme-(?P<ver>52\d{3})-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})']),
+        r'^cfme-(?P<ver>52\d{3})-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
+        r'^cfme-(?P<ver>52\d+)-(?P<month>\d{2})(?P<day>\d{2})']),
     '5.3': SPTuple('downstream-53z', '3.1', [
-        r'^cfme-(?P<ver>53\d{3})-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})']),
+        r'^cfme-(?P<ver>53\d{3})-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
+        r'^cfme-(?P<ver>53\d+)-(?P<month>\d{2})(?P<day>\d{2})']),
     '5.4': SPTuple('downstream-54z', '3.2', [
-        r'^cfme-(?P<ver>54\d{3})-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})']),
+        r'^cfme-(?P<ver>54\d{3})-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
+        r'^cfme-(?P<ver>54\d+)-(?P<month>\d{2})(?P<day>\d{2})']),
     '5.5': SPTuple('downstream-55z', '4.0', [
-        r'^cfme-(?P<ver>55\d{3})-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})']),
+        r'^cfme-(?P<ver>55\d{3})-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
+        r'^cfme-(?P<ver>55\d+)-(?P<month>\d{2})(?P<day>\d{2})']),
     '5.6': SPTuple('downstream-56z', '4.1', [
-        r'^cfme-(?P<ver>56\d{3})-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})']),
+        r'^cfme-(?P<ver>56\d{3})-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
+        r'^cfme-(?P<ver>56\d+)-(?P<month>\d{2})(?P<day>\d{2})']),
     '5.7': SPTuple('downstream-57z', '4.2', [
-        r'^cfme-(?P<ver>57\d{3})-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})']),
+        r'^cfme-(?P<ver>57\d{3})-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
+        r'^cfme-(?P<ver>57\d+)-(?P<month>\d{2})(?P<day>\d{2})']),
     '5.8': SPTuple('downstream-58z', '4.5', [
-        r'^cfme-(?P<ver>58\d{3})-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})']),
+        r'^cfme-(?P<ver>58\d{3})-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
+        r'^cfme-(?P<ver>58\d+)-(?P<month>\d{2})(?P<day>\d{2})']),
     '5.9': SPTuple('downstream-59z', '4.6', [
-        r'^cfme-(?P<ver>59\d{3})-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})']),
+        r'^cfme-(?P<ver>59\d{3})-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
+        r'^cfme-(?P<ver>59\d+)-(?P<month>\d{2})(?P<day>\d{2})']),
     '5.10': SPTuple('downstream-510z', '4.7', [
-        r'^cfme-(?P<ver>510\d{3})-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})']),
+        r'^cfme-(?P<ver>510\d{3})-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
+        r'^cfme-(?P<ver>510\d+)-(?P<month>\d{2})(?P<day>\d{2})']),
     'euwe': SPTuple('upstream-euwe', 'master', [
         r'^miq-(?P<ver>euwe[-\w]*?)-(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})',
         r'^miq-stable-(?P<ver>euwe[-\w]*?)-(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})']),
@@ -256,6 +265,9 @@ version_stream_product_mapping = {
 # maps some service templates
 generic_matchers = (
     ('sprout', r'^s_tpl'),
+    ('sprout', r'^s-tpl'),
+    ('sprout', r'^s_appl'),
+    ('sprout', r'^s-appl'),
     ('sprout', r'^sprout_template'),
     ('rhevm-internal', r'^raw'),
 )
@@ -402,11 +414,17 @@ class TemplateName(object):
                         template_date = futurecheck(date(year, month, day))
                     except ValueError:
                         continue
-                    dot_version = (version if 'downstream' not in stream_tuple.stream else
-                                   '{}.{}.{}.{}'.format(version[0],
-                                                        version[1],
-                                                        version[2],
-                                                        version[3:]))
+                    if 'downstream' not in stream_tuple.stream:
+                        dot_version = version
+                    elif version.startswith('51'):
+                        dot_version = '{}.{}.{}'.format(version[0],
+                                                        version[1:3],
+                                                        version[3:])
+                    else:
+                        dot_version = '{}.{}.{}.{}'.format(version[0],
+                                                           version[1],
+                                                           version[2],
+                                                           version[3:])
 
                     return TemplateInfo(stream_tuple.stream,
                                         template_date,
