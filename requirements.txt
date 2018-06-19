@@ -1,3 +1,5 @@
+attrs
 cached_property
 lxml
+requests
 six
