@@ -1,5 +1,8 @@
 attrs
 cached_property
+deepdiff
 lxml
 requests
 six
+oslo.i18n
+pytest
