@@ -1,18 +1,18 @@
 language: python
 python:
-  - "2.7"
+  - '2.7'
   - '3.4'
   - '3.5'
   - '3.6'
 install: pip install tox-travis
 script: tox
 after_success:
-- coveralls
+  - coveralls
 deploy:
   provider: pypi
   user: mshriver
   password:
-    secure: jZQsplA6teuy1BdUJMqnVYqa96iOsHAlKN+5v/Bzvttb6QpETyVtl+TLlg18745HNWiTCv5ilVbl3xNQ0zEmyfB5rDxfp8wt5tBvEm8CexSYh/HLRNKSUniJfDI9+dmTv7LYcLPoqO72PqNnbJWnNz+XaZfkgxjLgX++n4WZ/ff3CfczRQcXYKqZ6xm23C5EYS48xUcE3EUxVsaRq56r6ptLjM+nzjM9ln7ODGTpe0nz8zaHg5HyxBavs8PmesCpaUWZ/5QD6p+0RCCtWRXrEsnl+WPWEeFLvQlzAkVBVA2/wN7zjSNh2+NoW0PsVaAcn0Lf5VxyYZifuq7RPtxk+0+Racm/0NHpfxFCemySN0zPlER4/s614Yk20yO4/sTTPo6qLymPk2nGV8TjH64OekGCZZtHwuFGLIJQENvZ8Igp8ZlFqIZT1onEjSnKN/JHy6VdC2kUX3H6KJfQDcCMT2KNeBh+Cho3YqUYbK5lQowqrmp2eD8Qp8OvehI8oYCAmENgLBaLardhRG7Bbjb2BVGovfMvZLNLuoXNhDUd84oHk9dxDZDVXm3oiXkPqDsWtSPLCgbYgK4Z23f6zTeLvRyncgXsIpEa1BEHuUjYKFP0BtPcKVuvPrY4CJ92c+ZbtMSAfLn4Ek7eOFynf2V8KmxsP7CbSLrNkstMztMCiyg=
+    secure: duNXwo7qt/LboDk0jZRqOc6mHfuxzDy1zaz3UJXvR4ndTcgNBNTBPIrrVkzt5Xd3bdppkUmVrfWd+nt+W/NxTkTJ0eS+HFsOUbnxA/N+0ueGQBjIPF8x0m+fHRLCeLAqHyYb83zrDvlQNlZBuu4y/nUIVM0378ujGlZp2aH9Fl3GNZ5z7fGI6z5TxDgilfocypf31HVSIWW7Q2aEOzsZ/29oTzqkxGtbAfucScFlUu9+NEKzRdbPFUocQReLlSOWQPKLJ5AOFEoWBDOo1w8RDzepxeONLwWD54t15J8/mNgPTUTTSWJ9fvvCPBe0+KAdEzwFw5FuoU7ppqvG6DZ6uIDtTIvJ/o71Ov8KDKcrllWcKyWclOsJWZp518cCdRwhGy/AUVBIJnn3Mu3qOytAbpyvITH0K37tz6S+9+geeR6i5dUYLzj9UASca/FDjGeW26jKsGPwKdXcZHe3E/mPiJDuoZBL2o2sSOZKMAE+h4uhhUDuJVfGCLVDO7rfanAkYX64kl7MtwH2HCZ4/DI7YawkiTqRuALHdYYUB5Tp3tBlrg3zx6IhPG5/yz6+pnAW8PA06weKVX7QVlYzSb/SOoQhONbgUHFLXyoZ6KUICRCJXvMtFP9L0JH8f5JgPzS+MKq55UoK+560dSDr47g5zQ/dKfGHHii/AndXHfaWbhU=
   on:
     tags: true
     distributions: sdist bdist_wheel
