@@ -8,3 +8,12 @@ install: pip install tox-travis
 script: tox
 after_success:
 - coveralls
+deploy:
+  provider: pypi
+  user: mshriver
+  password:
+    secure: jZQsplA6teuy1BdUJMqnVYqa96iOsHAlKN+5v/Bzvttb6QpETyVtl+TLlg18745HNWiTCv5ilVbl3xNQ0zEmyfB5rDxfp8wt5tBvEm8CexSYh/HLRNKSUniJfDI9+dmTv7LYcLPoqO72PqNnbJWnNz+XaZfkgxjLgX++n4WZ/ff3CfczRQcXYKqZ6xm23C5EYS48xUcE3EUxVsaRq56r6ptLjM+nzjM9ln7ODGTpe0nz8zaHg5HyxBavs8PmesCpaUWZ/5QD6p+0RCCtWRXrEsnl+WPWEeFLvQlzAkVBVA2/wN7zjSNh2+NoW0PsVaAcn0Lf5VxyYZifuq7RPtxk+0+Racm/0NHpfxFCemySN0zPlER4/s614Yk20yO4/sTTPo6qLymPk2nGV8TjH64OekGCZZtHwuFGLIJQENvZ8Igp8ZlFqIZT1onEjSnKN/JHy6VdC2kUX3H6KJfQDcCMT2KNeBh+Cho3YqUYbK5lQowqrmp2eD8Qp8OvehI8oYCAmENgLBaLardhRG7Bbjb2BVGovfMvZLNLuoXNhDUd84oHk9dxDZDVXm3oiXkPqDsWtSPLCgbYgK4Z23f6zTeLvRyncgXsIpEa1BEHuUjYKFP0BtPcKVuvPrY4CJ92c+ZbtMSAfLn4Ek7eOFynf2V8KmxsP7CbSLrNkstMztMCiyg=
+  on:
+    tags: true
+    distributions: sdist bdist_wheel
+    repo: RedhatQE/miq_version
