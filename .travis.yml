@@ -16,4 +16,4 @@ deploy:
   on:
     tags: true
     distributions: sdist bdist_wheel
-    repo: RedhatQE/miq_version
+    repo: RedHatQE/miq_version
