@@ -464,6 +464,21 @@ class TemplateName(object):
                     year = int(groups.get('year', today.year) or today.year)
                     month, day = int(groups['month']), int(groups['day'])
                     version = groups.get('ver')
+                    if ('.' not in version and  # the version in the template wasn't dotted
+                            'downstream' in stream_tuple.stream and  # don't try to parse upstream
+                            len(version) > 3):  # sprout templates only have stream
+                        # old template name format with no dots
+                        if version.startswith('51'):
+                            version = '{}.{}.{}.{}'.format(version[0],
+                                                           version[1:3],
+                                                           version[3],
+                                                           version[4:])
+                        else:
+                            version = '{}.{}.{}.{}'.format(version[0],
+                                                           version[1],
+                                                           version[2],
+                                                           version[3:])
+
                     # strip - in case regex includes them, replace empty string with None
                     temp_type = groups.get('type') or None
                     # validate the template date by turning into a date obj

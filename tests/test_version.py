@@ -136,6 +136,10 @@ def test_version_list():
 # namedtuple('TemplateInfo', ['group_name', 'datestamp', 'stream', 'version', 'type'])
 @pytest.mark.parametrize(
     ('tmp_name', 'info_tuple'), [
+        ('cfme-51006-07252250',  # older format
+         TemplateInfo('downstream-510z', date(2018, 7, 25), True, '5.10.0.6', None)),
+        ('cfme-59410-04132250',  # older format, might break eventually because of year not present
+         TemplateInfo('downstream-59z', date(2018, 4, 13), True, '5.9.4.10', None)),
         ('miq-nightly-20180531',
          TemplateInfo('upstream', date(2018, 5, 31), True, '20180531', None)),
         ('miq-darga-20151009',
@@ -169,7 +173,7 @@ def test_version_list():
         ('cfme-5.9.4.1-qcow2-20180224',
          TemplateInfo('downstream-59z', date(2018, 2, 24), True, '5.9.4.1', 'qcow2')),
         ('docker-59410-20180606',
-         TemplateInfo('downstream-59z', date(2018, 6, 6), True, '59410', None)),
+         TemplateInfo('downstream-59z', date(2018, 6, 6), True, '5.9.4.10', None)),
         ('docker-5.9.4.10-20180606',
          TemplateInfo('downstream-59z', date(2018, 6, 6), True, '5.9.4.10', None)),
         ('s_tpl_downstream-510z_180621_nBAFLQ8A',
