@@ -216,94 +216,72 @@ LATEST = Version.latest()
 UPSTREAM = LATEST
 
 SPTuple = namedtuple('StreamProductTuple', ['stream', 'product_version', 'template_regex'])
-TemplateInfo = namedtuple('TemplateInfo', ['group_name', 'datestamp', 'stream', 'version'])
+TemplateInfo = namedtuple('TemplateInfo', ['group_name', 'datestamp', 'stream', 'version', 'type'])
 
+FORMATS_DOWNSTREAM = {
+    # Looks like: cfme-5.9.3.4-20180531 or cfme-5.10.0.0-pv-20171231
+    'template_with_year':
+        '^cfme-(?P<ver>(?P<major>{major})\.(?P<minor>{minor})\.(?P<patch>\d)\.(?P<build>\d{{1,2}}))'
+        '-((?P<type>[\w]*)-)?(?P<year>\d{{4}})?(?P<month>\d{{2}})(?P<day>\d{{2}})',
+    # Looks like: cfme-59304-0131
+    'template_no_year':
+        '^cfme-(?P<ver>{major}{minor}\d+)-(?P<month>\d{{2}})(?P<day>\d{{2}})',
+    # Looks like: docker-5.8.10.1-20180229
+    'template_docker':
+        '^docker-'
+        '(?P<ver>(?P<major>{major})\.?(?P<minor>{minor})\.?(?P<patch>\d)\.?(?P<build>\d{{1,2}}))'
+        '-(?P<year>\d{{4}})?(?P<month>\d{{2}})(?P<day>\d{{2}})',
+    # Looks like: s_tpl_downstream_59z_20171001 or s-appl-downstream-57z-20161231
+    'sprout':
+        '^s(-|_)(appl|tpl)(-|_)downstream(-|_)(?P<ver>{major}{minor})z'
+        '(-|_)(?P<year>\d{{2}})?(?P<month>\d{{2}})(?P<day>\d{{2}})',
+}
+FORMATS_UPSTREAM = {
+    # Looks like: miq-fine-20180531 or miq-euwe-2-20171231
+    'upstream_with_year':
+        '^miq-(?P<ver>{stream}[-\w]*?)-(?P<year>\d{{4}})(?P<month>\d{{2}})(?P<day>\d{{2}})',
+    # Looks like: miq-stable-fine-4-20180315
+    'upstream_stable':
+        '^miq-stable-(?P<ver>{stream}[-\w]*?)-(?P<year>\d{{4}})(?P<month>\d{{2}})(?P<day>\d{{2}})',
+    # Looks like: s_tpl_upstream_fine-3_20171028 or s-appl-upstream-gapri-20180411
+    'upstream_sprout':
+        '^s(-|_)(appl|tpl)(-|_)upstream(-|_)(?P<ver>{stream}[-\w]*?)'
+        '(-|_)(?P<year>\d{{2}})(?P<month>\d{{2}})(?P<day>\d{{2}})'
+}
 
 # Maps stream and product version to each app version
 version_stream_product_mapping = {
-    '5.2': SPTuple('downstream-52z', '3.0', [
-        r'^cfme-(?P<ver>52\d{3})-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
-        r'^cfme-(?P<ver>52\d+)-(?P<month>\d{2})(?P<day>\d{2})',
-        r'^docker-(?P<ver>52\d+)-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
-        r'^s(-|_)(appl|tpl)(-|_)downstream(-|_)(?P<ver>52)z(-|_)(?P<year>\d{2})?'
-        r'(?P<month>\d{2})(?P<day>\d{2})']),
-    '5.3': SPTuple('downstream-53z', '3.1', [
-        r'^cfme-(?P<ver>53\d{3})-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
-        r'^cfme-(?P<ver>53\d+)-(?P<month>\d{2})(?P<day>\d{2})',
-        r'^docker-(?P<ver>53\d+)-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
-        r'^s(-|_)(appl|tpl)(-|_)downstream(-|_)(?P<ver>53)z(-|_)(?P<year>\d{2})?'
-        r'(?P<month>\d{2})(?P<day>\d{2})']),
-    '5.4': SPTuple('downstream-54z', '3.2', [
-        r'^cfme-(?P<ver>54\d{3})-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
-        r'^cfme-(?P<ver>54\d+)-(?P<month>\d{2})(?P<day>\d{2})',
-        r'^docker-(?P<ver>54\d+)-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
-        r'^s(-|_)(appl|tpl)(-|_)downstream(-|_)(?P<ver>54)z(-|_)(?P<year>\d{2})?'
-        r'(?P<month>\d{2})(?P<day>\d{2})']),
-    '5.5': SPTuple('downstream-55z', '4.0', [
-        r'^cfme-(?P<ver>55\d{3})-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
-        r'^cfme-(?P<ver>55\d+)-(?P<month>\d{2})(?P<day>\d{2})',
-        r'^docker-(?P<ver>55\d+)-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
-        r'^s(-|_)(appl|tpl)(-|_)downstream(-|_)(?P<ver>55)z(-|_)(?P<year>\d{2})?'
-        r'(?P<month>\d{2})(?P<day>\d{2})']),
-    '5.6': SPTuple('downstream-56z', '4.1', [
-        r'^cfme-(?P<ver>56\d{3})-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
-        r'^cfme-nightly-(?P<ver>56\d+)-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
-        r'^cfme-(?P<ver>56\d+)-(?P<month>\d{2})(?P<day>\d{2})',
-        r'^docker-(?P<ver>56\d+)-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
-        r'^s(-|_)(appl|tpl)(-|_)downstream(-|_)(?P<ver>56)z(-|_)(?P<year>\d{2})?'
-        r'(?P<month>\d{2})(?P<day>\d{2})']),
-    '5.7': SPTuple('downstream-57z', '4.2', [
-        r'^cfme-(?P<ver>57\d{3})-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
-        r'^cfme-nightly-(?P<ver>57\d+)-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
-        r'^cfme-(?P<ver>57\d+)-(?P<month>\d{2})(?P<day>\d{2})',
-        r'^docker-(?P<ver>57\d+)-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
-        r'^s(-|_)(appl|tpl)(-|_)downstream(-|_)(?P<ver>57)z(-|_)(?P<year>\d{2})?'
-        r'(?P<month>\d{2})(?P<day>\d{2})']),
-    '5.8': SPTuple('downstream-58z', '4.5', [
-        r'^cfme-(?P<ver>58\d{3})-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
-        r'^cfme-nightly-(?P<ver>58\d+)-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
-        r'^cfme-(?P<ver>58\d+)-(?P<month>\d{2})(?P<day>\d{2})',
-        r'^docker-(?P<ver>58\d+)-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
-        r'^s(-|_)(appl|tpl)(-|_)downstream(-|_)(?P<ver>58)z(-|_)(?P<year>\d{2})?'
-        r'(?P<month>\d{2})(?P<day>\d{2})']),
-    '5.9': SPTuple('downstream-59z', '4.6', [
-        r'^cfme-(?P<ver>59\d{3})-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
-        r'^cfme-nightly-(?P<ver>59\d+)-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
-        r'^cfme-(?P<ver>59\d+)-(?P<month>\d{2})(?P<day>\d{2})',
-        r'^docker-(?P<ver>59\d+)-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
-        r'^s(-|_)(appl|tpl)(-|_)downstream(-|_)(?P<ver>59)z(-|_)(?P<year>\d{2})?'
-        r'(?P<month>\d{2})(?P<day>\d{2})']),
-    '5.10': SPTuple('downstream-510z', '4.7', [
-        r'^cfme-(?P<ver>510\d{3})-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
-        r'^cfme-(?P<ver>510\d+)-(?P<month>\d{2})(?P<day>\d{2})',
-        r'^docker-(?P<ver>510\d+)-(?P<year>\d{4})?(?P<month>\d{2})(?P<day>\d{2})',
-        r'^s(-|_)(appl|tpl)(-|_)downstream(-|_)(?P<ver>510)z(-|_)(?P<year>\d{2})?'
-        r'(?P<month>\d{2})(?P<day>\d{2})']),
-    'darga': SPTuple('upstream-darga', 'master', [
-        r'^miq-(?P<ver>darga[-\w]*?)-(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})',
-        r'^miq-stable-(?P<ver>darga[-\w]*?)-(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})',
-        r'^s(-|_)(appl|tpl)(-|_)upstream(-|_)(?P<ver>darga[-\w]*?)(-|_)'
-        r'(?P<year>\d{2})(?P<month>\d{2})(?P<day>\d{2})']),
-    'euwe': SPTuple('upstream-euwe', 'master', [
-        r'^miq-(?P<ver>euwe[-\w]*?)-(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})',
-        r'^miq-stable-(?P<ver>euwe[-\w]*?)-(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})',
-        r'^s(-|_)(appl|tpl)(-|_)upstream(-|_)(?P<ver>euwe[-\w]*?)(-|_)'
-        r'(?P<year>\d{2})(?P<month>\d{2})(?P<day>\d{2})']),
-    'fine': SPTuple('upstream-fine', 'master', [
-        r'^miq-(?P<ver>fine[-\w]*?)-(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})',
-        r'^miq-stable-(?P<ver>fine[-\w]*?)-(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})',
-        r'^s(-|_)(appl|tpl)(-|_)upstream(-|_)(?P<ver>fine[-\w]*?)(-|_)'
-        r'(?P<year>\d{2})(?P<month>\d{2})(?P<day>\d{2})']),
-    'gap': SPTuple('upstream-gap', 'master', [
-        r'^miq-(?P<ver>gapri[-\w]*?)-(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})',
-        r'^miq-stable-(?P<ver>gapri[-\w]*?)-(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})',
-        r'^s(-|_)(appl|tpl)(-|_)upstream(-|_)(?P<ver>gapri[-\w]*?)(-|_)'
-        r'(?P<year>\d{2})(?P<month>\d{2})(?P<day>\d{2})']),
-    LATEST: SPTuple('upstream', 'master', [
-        r'miq-nightly-(?P<ver>(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2}))',
-        r'miq-(?P<ver>(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2}))',
-        r'^s(-|_)(appl|tpl)(-|_)upstream(-|_)(stable(-|_))?'
-        r'(?P<year>\d{2})(?P<month>\d{2})(?P<day>\d{2})'])
+    '5.2': SPTuple('downstream-52z', '3.0',
+                   [regex.format(major='5', minor='2') for regex in FORMATS_DOWNSTREAM.values()]),
+    '5.3': SPTuple('downstream-53z', '3.1',
+                   [regex.format(major='5', minor='3') for regex in FORMATS_DOWNSTREAM.values()]),
+    '5.4': SPTuple('downstream-54z', '3.2',
+                   [regex.format(major='5', minor='4') for regex in FORMATS_DOWNSTREAM.values()]),
+    '5.5': SPTuple('downstream-55z', '4.0',
+                   [regex.format(major='5', minor='5') for regex in FORMATS_DOWNSTREAM.values()]),
+    '5.6': SPTuple('downstream-56z', '4.1',
+                   [regex.format(major='5', minor='6') for regex in FORMATS_DOWNSTREAM.values()]),
+    '5.7': SPTuple('downstream-57z', '4.2',
+                   [regex.format(major='5', minor='7') for regex in FORMATS_DOWNSTREAM.values()]),
+    '5.8': SPTuple('downstream-58z', '4.5',
+                   [regex.format(major='5', minor='8') for regex in FORMATS_DOWNSTREAM.values()]),
+    '5.9': SPTuple('downstream-59z', '4.6',
+                   [regex.format(major='5', minor='9') for regex in FORMATS_DOWNSTREAM.values()]),
+    '5.10': SPTuple('downstream-510z', '4.7',
+                   [regex.format(major='5', minor='10') for regex in FORMATS_DOWNSTREAM.values()]),
+    'darga': SPTuple('upstream-darga', 'master',
+                   [regex.format(stream='darga') for regex in FORMATS_UPSTREAM.values()]),
+    'euwe': SPTuple('upstream-euwe', 'master',
+                    [regex.format(stream='euwe') for regex in FORMATS_UPSTREAM.values()]),
+    'fine': SPTuple('upstream-fine', 'master',
+                    [regex.format(stream='fine') for regex in FORMATS_UPSTREAM.values()]),
+    'gap': SPTuple('upstream-gap', 'master',
+                   [regex.format(stream='gapri') for regex in FORMATS_UPSTREAM.values()]),
+    LATEST: SPTuple('upstream', 'master',
+                    [r'miq-nightly-(?P<ver>(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2}))',
+                     r'miq-(?P<ver>(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2}))',
+                     r'^s(-|_)(appl|tpl)(-|_)upstream(-|_)(stable(-|_))?'
+                     r'(?P<year>\d{2})(?P<month>\d{2})(?P<day>\d{2})'])
 }
 
 # maps some service templates
@@ -317,16 +295,26 @@ generic_matchers = (
 )
 
 
-def futurecheck(check_date):
-    """Given a date object, return a date object that isn't from the future
+def datecheck(check_date):
+    """Given a date object, return a date object that isn't from the future or distant past
 
     Some templates only have month/day values, not years. We create a date object
+    Some templates have a timestamp that ends up parsing to a yyyymmdd
+        But they were actually HHMMmmdd, like 11221212, dec 12th 11:22 AM, not dec 12 year 1122
+        Make sure the date isn't from future, but is also within the last 10 years
 
     """
     today = date.today()
+    # long ago, or at least start of the millennium
+    if check_date.year < 100:
+        # 2 digit year, add millenia
+        check_date = check_date.replace(year=check_date.year + 2000)
+    elif check_date.year < 2000:
+        # probably parsed wrong from an HHMMmmdd (hour-minute-month-day) timestamp, reset year
+        check_date = check_date.replace(year=today.year)
     while check_date > today:
+        # keep walking back, don't just set year, because month/day might be later in the year
         check_date = date(check_date.year - 1, check_date.month, check_date.day)
-
     return check_date
 
 
@@ -361,6 +349,8 @@ class TemplateName(object):
     CFME_ID = 'cfme'
     MIQ_ID = 'manageiq'
     build_url = attr.ib()  # URL to the build folder with ova/vhd/qc2/etc images
+    # specific image URL, when set the template name will include build type info, like paravirtual
+    image_url = attr.ib(default=None)
 
     @property
     def build_version(self):
@@ -377,14 +367,15 @@ class TemplateName(object):
         """
         v = requests.get('/'.join([self.build_url, 'version']))
         if v.ok:
+            # split and reform version string to be explicit and verbose+
             match = re.search(
-                '^(?P<major>\d)\.?(?P<minor>\d)\.?(?P<patch>\d)\.?(?P<build>\d{1,2})',
+                '^(?P<major>\d)\.(?P<minor>\d{1,2})\.(?P<patch>\d{1,2})\.(?P<build>\d{1,2})',
                 v.content)
             if match:
-                return ''.join([match.group('major'),
-                                match.group('minor'),
-                                match.group('patch'),
-                                match.group('build').zfill(2)])  # zero left-pad
+                return '.'.join([match.group('major'),
+                                 match.group('minor'),
+                                 match.group('patch'),
+                                 match.group('build')])
             else:
                 raise ValueError('Unable to match version string in %s/version: {}'
                                  .format(self.build_url, v.content))
@@ -426,11 +417,32 @@ class TemplateName(object):
             raise ValueError('{} file not found in {}'.format(self.SHA, self.build_url))
 
     @property
+    def build_type(self):
+        """Get a specific template type from the image URL
+        Used for things like vpshere where there is separate paravirtual image
+        Or rhv, where there are ova and qcow2 images
+
+        Only set if a specific image url was supplied for the object, not applicable when looking at
+        an entire build directory of images.
+        """
+        if not self.image_url:
+            return None
+        elif 'paravirtual' in self.image_url:
+            return 'pv'
+        else:
+            return self.image_url.split('.')[-1]  # file type
+
+    @property
     def template_name(self):
         """Actually construct the template name"""
-        return '-'.join([self.CFME_ID if self.CFME_ID in self.build_url else self.MIQ_ID,
-                         self.build_version,
-                         self.build_date])
+        name_args = [self.CFME_ID if self.CFME_ID in self.build_url else self.MIQ_ID,
+                     self.build_version]
+        bt = self.build_type
+        if bt:
+            name_args.append(bt)
+        name_args.append(self.build_date)
+
+        return '-'.join(name_args)
 
     @classmethod
     def parse_template(cls, template_name):
@@ -452,34 +464,38 @@ class TemplateName(object):
                     year = int(groups.get('year', today.year) or today.year)
                     month, day = int(groups['month']), int(groups['day'])
                     version = groups.get('ver')
-                    # validate the template date by turning into a date obj
-                    try:
-                        # year, month, day might have been parsed incorrectly with loose regex
-                        template_date = futurecheck(date(year, month, day))
-                    except ValueError:
-                        continue
-                    if 'downstream' not in stream_tuple.stream:
-                        dot_version = version
-                    elif version.startswith('51'):
-                        version = version.ljust(4, '0')
-                        dot_version = '{}.{}.{}.{}'.format(version[0],
+                    if ('.' not in version and  # the version in the template wasn't dotted
+                            'downstream' in stream_tuple.stream and  # don't try to parse upstream
+                            len(version) > 3):  # sprout templates only have stream
+                        # old template name format with no dots
+                        if version.startswith('51'):
+                            version = '{}.{}.{}.{}'.format(version[0],
                                                            version[1:3],
                                                            version[3],
                                                            version[4:])
-                    else:
-                        version = version.ljust(4, '0')
-                        dot_version = '{}.{}.{}.{}'.format(version[0],
+                        else:
+                            version = '{}.{}.{}.{}'.format(version[0],
                                                            version[1],
                                                            version[2],
                                                            version[3:])
 
+                    # strip - in case regex includes them, replace empty string with None
+                    temp_type = groups.get('type') or None
+                    # validate the template date by turning into a date obj
+                    try:
+                        # year, month, day might have been parsed incorrectly with loose regex
+                        template_date = datecheck(date(year, month, day))
+                    except ValueError:
+                        continue
+
                     return TemplateInfo(stream_tuple.stream,
                                         template_date,
                                         True,
-                                        version=dot_version)
+                                        version,
+                                        temp_type)
         for group_name, regex in generic_matchers:
             matches = re.match(regex, template_name)
             if matches:
-                return TemplateInfo(group_name, None, False, None)
+                return TemplateInfo(group_name, None, False, None, None)
         # If no match, unknown
-        return TemplateInfo('unknown', None, False, None)
+        return TemplateInfo('unknown', None, False, None, None)
