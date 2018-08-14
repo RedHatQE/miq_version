@@ -347,7 +347,7 @@ class TemplateName(object):
     """
     SHA = 'SHA256SUM'
     CFME_ID = 'cfme'
-    MIQ_ID = 'manageiq'
+    MIQ_ID = 'miq'
     build_url = attr.ib()  # URL to the build folder with ova/vhd/qc2/etc images
     # specific image URL, when set the template name will include build type info, like paravirtual
     image_url = attr.ib(default=None)
