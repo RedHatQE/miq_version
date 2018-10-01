@@ -369,8 +369,8 @@ class TemplateName(object):
         if v.ok:
             # split and reform version string to be explicit and verbose+
             match = re.search(
-                '^(?P<major>\d)\.(?P<minor>\d{1,2})\.(?P<patch>\d{1,2})\.(?P<build>\d{1,2})',
-                v.content)
+                r'^(?P<major>\d)\.(?P<minor>\d{1,2})\.(?P<patch>\d{1,2})\.(?P<build>\d{1,2})',
+                v.content.decode('utf-8'))
             if match:
                 return '.'.join([match.group('major'),
                                  match.group('minor'),
