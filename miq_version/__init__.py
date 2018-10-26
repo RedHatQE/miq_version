@@ -463,7 +463,7 @@ class TemplateName(object):
                     today = date.today()
                     year = int(groups.get('year', today.year) or today.year)
                     month, day = int(groups['month']), int(groups['day'])
-                    version = groups.get('ver')
+                    version = groups.get('ver', '')
                     if ('.' not in version and  # the version in the template wasn't dotted
                             'downstream' in stream_tuple.stream and  # don't try to parse upstream
                             len(version) > 3):  # sprout templates only have stream
