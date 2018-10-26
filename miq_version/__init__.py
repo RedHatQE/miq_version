@@ -221,32 +221,34 @@ TemplateInfo = namedtuple('TemplateInfo', ['group_name', 'datestamp', 'stream', 
 FORMATS_DOWNSTREAM = {
     # Looks like: cfme-5.9.3.4-20180531 or cfme-5.10.0.0-pv-20171231
     'template_with_year':
-        '^cfme-(?P<ver>(?P<major>{major})\.(?P<minor>{minor})\.(?P<patch>\d)\.(?P<build>\d{{1,2}}))'
-        '-((?P<type>[\w]*)-)?(?P<year>\d{{4}})?(?P<month>\d{{2}})(?P<day>\d{{2}})',
+        r'^cfme-'
+        r'(?P<ver>(?P<major>{major})\.(?P<minor>{minor})\.(?P<patch>\d)\.(?P<build>\d{{1,2}}))'
+        r'-((?P<type>[\w]*)-)?'
+        r'(?P<year>\d{{4}})?(?P<month>\d{{2}})(?P<day>\d{{2}})',
     # Looks like: cfme-59304-0131
     'template_no_year':
-        '^cfme-(?P<ver>{major}{minor}\d+)-(?P<month>\d{{2}})(?P<day>\d{{2}})',
+        r'^cfme-(?P<ver>{major}{minor}\d+)-(?P<month>\d{{2}})(?P<day>\d{{2}})',
     # Looks like: docker-5.8.10.1-20180229
     'template_docker':
-        '^docker-'
-        '(?P<ver>(?P<major>{major})\.?(?P<minor>{minor})\.?(?P<patch>\d)\.?(?P<build>\d{{1,2}}))'
-        '-(?P<year>\d{{4}})?(?P<month>\d{{2}})(?P<day>\d{{2}})',
+        r'^docker-'
+        r'(?P<ver>(?P<major>{major})\.?(?P<minor>{minor})\.?(?P<patch>\d)\.?(?P<build>\d{{1,2}}))'
+        r'-(?P<year>\d{{4}})?(?P<month>\d{{2}})(?P<day>\d{{2}})',
     # Looks like: s_tpl_downstream_59z_20171001 or s-appl-downstream-57z-20161231
     'sprout':
-        '^s(-|_)(appl|tpl)(-|_)downstream(-|_)(?P<ver>{major}{minor})z'
-        '(-|_)(?P<year>\d{{2}})?(?P<month>\d{{2}})(?P<day>\d{{2}})',
+        r'^s(-|_)(appl|tpl)(-|_)downstream(-|_)(?P<ver>{major}{minor})z'
+        r'(-|_)(?P<year>\d{{2}})?(?P<month>\d{{2}})(?P<day>\d{{2}})',
 }
 FORMATS_UPSTREAM = {
     # Looks like: miq-fine-20180531 or miq-euwe-2-20171231
     'upstream_with_year':
-        '^miq-(?P<ver>{stream}[-\w]*?)-(?P<year>\d{{4}})(?P<month>\d{{2}})(?P<day>\d{{2}})',
+        r'^miq-(?P<ver>{stream}[-\w]*?)-(?P<year>\d{{4}})(?P<month>\d{{2}})(?P<day>\d{{2}})',
     # Looks like: miq-stable-fine-4-20180315
     'upstream_stable':
-        '^miq-stable-(?P<ver>{stream}[-\w]*?)-(?P<year>\d{{4}})(?P<month>\d{{2}})(?P<day>\d{{2}})',
+        r'^miq-stable-(?P<ver>{stream}[-\w]*?)-(?P<year>\d{{4}})(?P<month>\d{{2}})(?P<day>\d{{2}})',
     # Looks like: s_tpl_upstream_fine-3_20171028 or s-appl-upstream-gapri-20180411
     'upstream_sprout':
-        '^s(-|_)(appl|tpl)(-|_)upstream(-|_)(?P<ver>{stream}[-\w]*?)'
-        '(-|_)(?P<year>\d{{2}})(?P<month>\d{{2}})(?P<day>\d{{2}})'
+        r'^s(-|_)(appl|tpl)(-|_)upstream(-|_)(?P<ver>{stream}[-\w]*?)'
+        r'(-|_)(?P<year>\d{{2}})(?P<month>\d{{2}})(?P<day>\d{{2}})'
 }
 
 # Maps stream and product version to each app version
@@ -391,7 +393,7 @@ class TemplateName(object):
                 # pull release and its possible number (with -) from image string
                 # examples: miq-prov-fine-4-date-hash.vhd, miq-prov-gaprindashvilli-date-hash.vhd
                 match = re.search(
-                    'manageiq-(?:[\w]+?)-(?P<release>[\w]+?)(?P<number>-\d)?-\d{''3,}',
+                    r'manageiq-(?:[\w]+?)-(?P<release>[\w]+?)(?P<number>-\d)?-\d{''3,}',
                     str(images[0]))
                 if match:
                     # if its a master image, version is 'nightly', otherwise use release+number
@@ -464,9 +466,9 @@ class TemplateName(object):
                     year = int(groups.get('year', today.year) or today.year)
                     month, day = int(groups['month']), int(groups['day'])
                     version = groups.get('ver', '')
-                    if ('.' not in version and  # the version in the template wasn't dotted
-                            'downstream' in stream_tuple.stream and  # don't try to parse upstream
-                            len(version) > 3):  # sprout templates only have stream
+                    if ('.' not in version  # the version in the template wasn't dotted
+                            and 'downstream' in stream_tuple.stream  # don't try to parse upstream
+                            and len(version) > 3):  # sprout templates only have stream
                         # old template name format with no dots
                         if version.startswith('51'):
                             version = '{}.{}.{}.{}'.format(version[0],
