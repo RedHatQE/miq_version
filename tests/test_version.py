@@ -206,14 +206,21 @@ def test_template_build_type(image_url, expected_type):
 
 
 @pytest.mark.parametrize(
-    ('test_date', 'expected_date'),
-    [(date(2018, 1, 1), date(2018, 1, 1)),
-     (date(2000, TODAY.month, TODAY.day), date(2000, TODAY.month, TODAY.day)),  # past, no modify
-     (date(1999, TODAY.month, TODAY.day), date(2018, TODAY.month, TODAY.day)),  # past, modified
-     (date(16, TODAY.month, TODAY.day), date(2016, TODAY.month, TODAY.day)),  # short year
-     (date(30, TODAY.month, TODAY.day), date(2018, TODAY.month, TODAY.day)),  # short year, future
-     (date(1130, TODAY.month, TODAY.day), date(TODAY.year, TODAY.month, TODAY.day)),  # bad parse
-     (date(2019, TODAY.month, TODAY.day), date(2018, TODAY.month, TODAY.day)),  # future, 1 year
-     (date(2030, TODAY.month, TODAY.day), date(2018, TODAY.month, TODAY.day))])  # future, iterate
+    ('test_date',
+     'expected_date'),
+    [(date(2018, 1, 1),
+      date(2018, 1, 1)),
+     (date(2000, TODAY.month, TODAY.day),
+      date(2000, TODAY.month, TODAY.day)),  # past, no modify
+     (date(1999, TODAY.month, TODAY.day),
+      date(TODAY.year, TODAY.month, TODAY.day)),  # past, modified
+     (date(16, TODAY.month, TODAY.day),
+      date(2016, TODAY.month, TODAY.day)),  # short year
+     (date(30, TODAY.month, TODAY.day),
+      date(TODAY.year, TODAY.month, TODAY.day)),  # short year, future
+     (date(1130, TODAY.month, TODAY.day),
+      date(TODAY.year, TODAY.month, TODAY.day)),  # bad parse
+     (date(TODAY.year + 10, TODAY.month, TODAY.day),
+      date(TODAY.year, TODAY.month, TODAY.day))])
 def test_datecheck(test_date, expected_date):
     assert expected_date == datecheck(test_date)
