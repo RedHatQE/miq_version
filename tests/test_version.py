@@ -137,9 +137,23 @@ def test_version_list():
 @pytest.mark.parametrize(
     ('tmp_name', 'info_tuple'), [
         ('cfme-51006-07252250',  # older format
-         TemplateInfo('downstream-510z', date(2018, 7, 25), True, '5.10.0.6', None)),
+         TemplateInfo(
+             'downstream-510z',
+             # pick the year dynamically based on TODAY
+             date(TODAY.year if TODAY.month >= 7 and TODAY.day >= 25 else TODAY.year - 1, 7, 25),
+             True,
+             '5.10.0.6',
+             None)
+         ),
         ('cfme-59410-04132250',  # older format, might break eventually because of year not present
-         TemplateInfo('downstream-59z', date(2018, 4, 13), True, '5.9.4.10', None)),
+         TemplateInfo(
+             'downstream-59z',
+             # pick the year dynamically based on TODAY
+             date(TODAY.year if TODAY.month >= 4 and TODAY.day >= 13 else TODAY.year - 1, 4, 13),
+             True,
+             '5.9.4.10',
+             None)
+         ),
         ('miq-nightly-20180531',
          TemplateInfo('upstream', date(2018, 5, 31), True, '20180531', None)),
         ('miq-darga-20151009',
@@ -172,12 +186,14 @@ def test_version_list():
          TemplateInfo('downstream-59z', date(2018, 2, 23), True, '5.9.3.10', 'pv')),
         ('cfme-5.9.4.1-qcow2-20180224',
          TemplateInfo('downstream-59z', date(2018, 2, 24), True, '5.9.4.1', 'qcow2')),
+        ('cfme-5.11.0.0-20190409',
+         TemplateInfo('downstream-511z', date(2019, 4, 9), True, '5.11.0.0', None)),
         ('docker-59410-20180606',
          TemplateInfo('downstream-59z', date(2018, 6, 6), True, '5.9.4.10', None)),
         ('docker-5.9.4.10-20180606',
          TemplateInfo('downstream-59z', date(2018, 6, 6), True, '5.9.4.10', None)),
         ('s_tpl_downstream-510z_180621_nBAFLQ8A',
-         TemplateInfo('downstream-510z', date(2018, 6, 21), True, '510', None))]
+         TemplateInfo('downstream-510z', date(2018, 6, 21), True, '510', None))],
 )
 def test_template_parsing(tmp_name, info_tuple):
     parsed = TemplateName.parse_template(tmp_name)
