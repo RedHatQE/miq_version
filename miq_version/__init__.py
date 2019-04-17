@@ -271,6 +271,8 @@ version_stream_product_mapping = {
                    [regex.format(major='5', minor='9') for regex in FORMATS_DOWNSTREAM.values()]),
     '5.10': SPTuple('downstream-510z', '4.7',
                    [regex.format(major='5', minor='10') for regex in FORMATS_DOWNSTREAM.values()]),
+    '5.11': SPTuple('downstream-511z', '5.0',
+                    [regex.format(major='5', minor='11') for regex in FORMATS_DOWNSTREAM.values()]),
     'darga': SPTuple('upstream-darga', 'master',
                    [regex.format(stream='darga') for regex in FORMATS_UPSTREAM.values()]),
     'euwe': SPTuple('upstream-euwe', 'master',
