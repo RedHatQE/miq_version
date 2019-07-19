@@ -10,6 +10,10 @@ from lxml import html
 from six import string_types
 
 
+SPTuple = namedtuple('StreamProductTuple', ['stream', 'product_version', 'template_regex'])
+TemplateInfo = namedtuple('TemplateInfo', ['group_name', 'datestamp', 'stream', 'version', 'type'])
+
+
 @total_ordering
 class Version(object):
     """Version class based on distutil.version.LooseVersion"""
@@ -211,13 +215,6 @@ def get_version(obj=None):
     return Version(obj)
 
 
-LOWEST = Version.lowest()
-LATEST = Version.latest()
-UPSTREAM = LATEST
-
-SPTuple = namedtuple('StreamProductTuple', ['stream', 'product_version', 'template_regex'])
-TemplateInfo = namedtuple('TemplateInfo', ['group_name', 'datestamp', 'stream', 'version', 'type'])
-
 FORMATS_DOWNSTREAM = {
     # Looks like: cfme-5.9.3.4-20180531 or cfme-5.10.0.0-pv-20171231
     'template_with_year':
@@ -281,12 +278,28 @@ version_stream_product_mapping = {
                     [regex.format(stream='fine') for regex in FORMATS_UPSTREAM.values()]),
     'gap': SPTuple('upstream-gap', 'master',
                    [regex.format(stream='gapri') for regex in FORMATS_UPSTREAM.values()]),
-    LATEST: SPTuple('upstream', 'master',
+    'master': SPTuple('upstream', 'master',
                     [r'miq-nightly-(?P<ver>(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2}))',
                      r'miq-(?P<ver>(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2}))',
                      r'^s(-|_)(appl|tpl)(-|_)upstream(-|_)(stable(-|_))?'
                      r'(?P<year>\d{2})(?P<month>\d{2})(?P<day>\d{2})'])
 }
+
+# CONSTANTS for import and use in default version picking
+LOWEST = Version.lowest()
+LATEST = Version.latest()
+# latest streams, not specific versions
+LATEST_DOWN_STREAM = [spt.stream
+                     for spt in sorted(version_stream_product_mapping.values(),
+                                       key=lambda tup: tup.product_version)
+                     if 'downstream' in spt.stream][-1]
+LATEST_UP_STREAM = [spt[0]  # the key
+                    # pass items() to the sort so that the resulting objects are the SPT tuples
+                    for spt in sorted(version_stream_product_mapping.items())
+                    # only include master versions, then ignore master to leave latest named stream
+                    if 'master' in spt[1].product_version and 'master' not in spt[0]][-1]
+UPSTREAM = LATEST
+
 
 # maps some service templates
 generic_matchers = (
