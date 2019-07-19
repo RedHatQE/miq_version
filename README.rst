@@ -1,5 +1,5 @@
 miq_version
-========
+===========
 
 Introduction
 ------------
