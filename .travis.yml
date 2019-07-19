@@ -12,10 +12,10 @@ after_success:
 deploy:
   provider: pypi
   skip_existing: true
+  distributions: "bdist_wheel sdist"
   user: mshriver
   password:
     secure: duNXwo7qt/LboDk0jZRqOc6mHfuxzDy1zaz3UJXvR4ndTcgNBNTBPIrrVkzt5Xd3bdppkUmVrfWd+nt+W/NxTkTJ0eS+HFsOUbnxA/N+0ueGQBjIPF8x0m+fHRLCeLAqHyYb83zrDvlQNlZBuu4y/nUIVM0378ujGlZp2aH9Fl3GNZ5z7fGI6z5TxDgilfocypf31HVSIWW7Q2aEOzsZ/29oTzqkxGtbAfucScFlUu9+NEKzRdbPFUocQReLlSOWQPKLJ5AOFEoWBDOo1w8RDzepxeONLwWD54t15J8/mNgPTUTTSWJ9fvvCPBe0+KAdEzwFw5FuoU7ppqvG6DZ6uIDtTIvJ/o71Ov8KDKcrllWcKyWclOsJWZp518cCdRwhGy/AUVBIJnn3Mu3qOytAbpyvITH0K37tz6S+9+geeR6i5dUYLzj9UASca/FDjGeW26jKsGPwKdXcZHe3E/mPiJDuoZBL2o2sSOZKMAE+h4uhhUDuJVfGCLVDO7rfanAkYX64kl7MtwH2HCZ4/DI7YawkiTqRuALHdYYUB5Tp3tBlrg3zx6IhPG5/yz6+pnAW8PA06weKVX7QVlYzSb/SOoQhONbgUHFLXyoZ6KUICRCJXvMtFP9L0JH8f5JgPzS+MKq55UoK+560dSDr47g5zQ/dKfGHHii/AndXHfaWbhU=
   on:
     tags: true
-    distributions: "bdist_wheel sdist"
     repo: RedHatQE/miq_version
