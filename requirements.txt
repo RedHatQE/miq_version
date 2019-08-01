@@ -1,9 +1,0 @@
-attrs
-cached_property
-# DeepDiff v3.3.0 is the last version to supprt py2
-deepdiff<=3.3.0
-lxml
-requests
-six
-oslo.i18n
-pytest
