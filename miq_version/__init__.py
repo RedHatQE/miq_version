@@ -7,7 +7,6 @@ from cached_property import cached_property
 from collections import namedtuple
 from functools import total_ordering
 from lxml import html
-from six import string_types
 
 
 SPTuple = namedtuple('StreamProductTuple', ['stream', 'product_version', 'template_regex'])
@@ -208,7 +207,7 @@ def get_version(obj=None):
     """
     if isinstance(obj, Version):
         return obj
-    if not isinstance(obj, string_types):
+    if not isinstance(obj, str):
         obj = str(obj)
     if obj.startswith('master'):
         return Version.latest()
