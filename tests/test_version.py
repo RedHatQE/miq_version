@@ -140,7 +140,9 @@ def test_version_list():
          TemplateInfo(
              'downstream-510z',
              # pick the year dynamically based on TODAY
-             date(TODAY.year if TODAY.month >= 7 and TODAY.day >= 25 else TODAY.year - 1, 7, 25),
+             date(TODAY.year if (TODAY.month > 7 or (TODAY.month == 7 and TODAY.day >= 25))
+                  else (TODAY.year - 1),
+                  7, 25),
              True,
              '5.10.0.6',
              None)
@@ -149,7 +151,9 @@ def test_version_list():
          TemplateInfo(
              'downstream-59z',
              # pick the year dynamically based on TODAY
-             date(TODAY.year if TODAY.month >= 4 and TODAY.day >= 13 else TODAY.year - 1, 4, 13),
+             date(TODAY.year if (TODAY.month > 4 or (TODAY.month == 4 and TODAY.day >= 13))
+                  else (TODAY.year - 1),
+                  4, 13),
              True,
              '5.9.4.10',
              None)
