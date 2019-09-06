@@ -186,6 +186,8 @@ def test_version_list():
          TemplateInfo('downstream-510z', date(2018, 2, 21), True, '5.10.0.3', None)),
         ('cfme-5.10.1.10-20180222',
          TemplateInfo('downstream-510z', date(2018, 2, 22), True, '5.10.1.10', None)),
+        ('cfme-5.10.10.100-20180222',
+         TemplateInfo('downstream-510z', date(2018, 2, 22), True, '5.10.10.100', None)),
         ('cfme-5.9.3.10-pv-20180223',
          TemplateInfo('downstream-59z', date(2018, 2, 23), True, '5.9.3.10', 'pv')),
         ('cfme-5.9.4.1-qcow2-20180224',
