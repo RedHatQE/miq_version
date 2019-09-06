@@ -218,7 +218,7 @@ FORMATS_DOWNSTREAM = {
     # Looks like: cfme-5.9.3.4-20180531 or cfme-5.10.0.0-pv-20171231
     'template_with_year':
         r'^cfme-'
-        r'(?P<ver>(?P<major>{major})\.(?P<minor>{minor})\.(?P<patch>\d)\.(?P<build>\d{{1,2}}))'
+        r'(?P<ver>(?P<major>{major})\.(?P<minor>{minor})\.(?P<patch>\d+)\.(?P<build>\d+))'
         r'-((?P<type>[\w]*)-)?'
         r'(?P<year>\d{{4}})?(?P<month>\d{{2}})(?P<day>\d{{2}})',
     # Looks like: cfme-59304-0131
@@ -227,7 +227,7 @@ FORMATS_DOWNSTREAM = {
     # Looks like: docker-5.8.10.1-20180229
     'template_docker':
         r'^docker-'
-        r'(?P<ver>(?P<major>{major})\.?(?P<minor>{minor})\.?(?P<patch>\d)\.?(?P<build>\d{{1,2}}))'
+        r'(?P<ver>(?P<major>{major})\.?(?P<minor>{minor})\.?(?P<patch>\d+)\.?(?P<build>\d+))'
         r'-(?P<year>\d{{4}})?(?P<month>\d{{2}})(?P<day>\d{{2}})',
     # Looks like: s_tpl_downstream_59z_20171001 or s-appl-downstream-57z-20161231
     'sprout':
