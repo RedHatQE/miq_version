@@ -35,19 +35,11 @@ class Version(object):
         elif vstring:
             vstring = str(vstring).strip()
         # TODO separate upstream versions
-        if any([
-                vstring in ('master', 'latest', 'upstream'),
-                'fine' in vstring,
-                'euwe' in vstring,
-                'gaprindashvili' in vstring]):
+        if vstring in ('master', 'latest', 'upstream'):
             vstring = 'master'
-        # TODO These aren't used anywhere - remove?
-        if vstring == 'darga-3':
-            vstring = '5.6.1'
-        if vstring == 'darga-4.1':
-            vstring = '5.6.2'
-        if vstring == 'darga-5':
-            vstring = '5.6.3'
+        for upstream_series in ['fine', 'euwe', 'gaprindashvili']:
+            if upstream_series in vstring:
+                vstring = upstream_series
 
         components = list(filter(lambda x: x and x != '.',
                             self.component_re.findall(vstring)))
