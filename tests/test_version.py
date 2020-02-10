@@ -133,6 +133,18 @@ def test_version_list():
     assert sorted(version_list, reverse=True) == reverse_sorted_version
 
 
+@pytest.mark.parametrize(('version', 'series', 'stream'), [
+    ('master', 'master', 'upstream'),
+    ('euwe', 'euwe', 'upstream-euwe'),
+    ('fine', 'fine', 'upstream-fine'),
+    ('5.10.0.0', '5.10', 'downstream-510z'),
+    ('5.11.0.0', '5.11', 'downstream-511z'),
+])
+def test_version_series_stream(version, series, stream):
+    assert Version(version).is_in_series(series)
+    assert Version(version).stream() == stream
+
+
 # namedtuple('TemplateInfo', ['group_name', 'datestamp', 'stream', 'version', 'type'])
 @pytest.mark.parametrize(
     ('tmp_name', 'info_tuple'), [
