@@ -14,8 +14,8 @@ from . import constants
 class Version(object):
     """Version class based on distutil.version.LooseVersion"""
     SUFFIXES = ('nightly', 'pre', 'alpha', 'beta', 'rc')
-    SUFFIXES_STR = "|".join(r'-{}(?:\d+(?:\.\d+)?)?'.format(suff) for suff in SUFFIXES)
-    component_re = re.compile(r'(?:\s*(\d+|[a-z]+|\.|(?:{})+$))'.format(SUFFIXES_STR))
+    SUFFIXES_STR = "|".join(rf'-{suffix}(?:\d+(?:\.\d+)?)?' for suffix in SUFFIXES)
+    component_re = re.compile(rf'(?:\s*(\d+|[a-z]+|\.|(?:{SUFFIXES_STR})+$))')
     suffix_item_re = re.compile(r'^([^0-9]+)(\d+(?:\.\d+)?)?$')
 
     def __init__(self, vstring):
@@ -97,14 +97,14 @@ class Version(object):
         return self.vstring
 
     def __repr__(self):
-        return '{}({})'.format(type(self).__name__, repr(self.vstring))
+        return f'{type(self).__name__}({repr(self.vstring)})'
 
     def __lt__(self, other):
         try:
             if not isinstance(other, type(self)):
                 other = Version(other)
         except Exception:
-            raise ValueError('Cannot compare Version to {}'.format(type(other).__name__))
+            raise ValueError(f'Cannot compare Version to {type(other).__name__}')
 
         if self == other:
             return False
@@ -320,7 +320,7 @@ class TemplateName(object):
                                           "%a, %d %b %Y %H:%M:%S %Z")
             return timestamp.strftime('%Y%m%d')
         else:
-            raise ValueError('{} file not found in {}'.format(self.SHA, self.build_url))
+            raise ValueError(f'{self.SHA} file not found in {self.build_url}')
 
     @property
     def build_type(self):
@@ -377,15 +377,9 @@ class TemplateName(object):
                     ):  # sprout templates only have stream
                         # old template name format with no dots
                         if version.startswith('51'):
-                            version = '{}.{}.{}.{}'.format(version[0],
-                                                           version[1:3],
-                                                           version[3],
-                                                           version[4:])
+                            version = f'{version[0]}.{version[1:3]}.{version[3]}.{version[4:]}'
                         else:
-                            version = '{}.{}.{}.{}'.format(version[0],
-                                                           version[1],
-                                                           version[2],
-                                                           version[3:])
+                            version = f'{version[0]}.{version[1]}.{version[2]}.{version[3:]}'
 
                     # strip - in case regex includes them, replace empty string with None
                     temp_type = groups.get('type') or None
