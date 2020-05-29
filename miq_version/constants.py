@@ -87,18 +87,23 @@ version_stream_product_mapping = {
                      r'(?P<year>\d{2})(?P<month>\d{2})(?P<day>\d{2})'])
 }
 
+UPSTREAM_DOWNSTREAM_MAPPING = {
+    'jansa': '5.12',
+    'ivanchuck': '5.11',
+    'hammer': '5.10',
+    'gaprindashvili': '5.9',
+    'fine': '5.8',
+    'euwe': '5.7'
+}
+
+
 # latest streams, not specific versions
 LATEST_DOWN_STREAM = [spt.stream
                      for spt in sorted(version_stream_product_mapping.values(),
                                        key=lambda tup: tup.product_version)
                      if 'downstream' in spt.stream][-1]
 SORTED_UPSTREAM_RELEASES = sorted(
-    [
-        name  # release name
-        for name, spt in sorted(version_stream_product_mapping.items())
-        # only include master versions, then ignore master to leave latest named stream
-        if 'upstream' in spt.stream and 'master' != spt.product_version
-    ],
+    [str(name) for name in UPSTREAM_DOWNSTREAM_MAPPING.keys()],
     reverse=True
 )
 LATEST_UP_STREAM = SORTED_UPSTREAM_RELEASES[0]

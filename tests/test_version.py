@@ -98,6 +98,7 @@ reverse_sorted_version = [
 GT = '>'
 LT = '<'
 EQ = '=='
+NE = '!='
 
 
 @pytest.mark.parametrize(('v1', 'op', 'v2'), [
@@ -117,7 +118,13 @@ EQ = '=='
     ('jansa', GT, 'ivanchuck'),
     ('ivanchuck', GT, 'hammer'),
     ('fine', LT, 'jansa'),
-    ('jansa', LT, 'master')
+    ('jansa', LT, 'master'),
+    ('hammer', LT, '5.11'),
+    ('jansa', GT, '5.11'),
+    ('5.12', LT, 'master'),
+    ('5.10', LT, 'master'),
+    ('5.10', NE, 'hammer'),
+    ('5.11', NE, 'ivanchuck')
 ])
 def test_version(v1, op, v2):
     v1 = Version(v1)
@@ -135,6 +142,8 @@ def test_version(v1, op, v2):
         # to exercise all
         assert v1 <= v2
         assert v1 >= v2
+    elif op == NE:
+        assert v1 != v2
 
 
 def test_version_list():

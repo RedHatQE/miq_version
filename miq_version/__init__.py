@@ -114,7 +114,25 @@ class Version(object):
             return True
         else:
             if self.version != other.version:
-                return self.version < other.version
+                # handle upstream version comparisons
+                # This logic might not be the most efficient, but its readable and predictable
+                # 1. Both objects are upstream release names, make direct string comparison
+                if (self.vstring in constants.SORTED_UPSTREAM_RELEASES and
+                        other.vstring in constants.SORTED_UPSTREAM_RELEASES):
+                    return self.version < other.version
+                # 2. Self is an upstream release name, convert to downstream version number
+                elif self.vstring in constants.SORTED_UPSTREAM_RELEASES:
+                    # need to compare upstream release string to downstream version
+                    map_version = constants.UPSTREAM_DOWNSTREAM_MAPPING.get(self.vstring)
+                    return [int(s) for s in map_version.split('.')] < other.version
+                # 3. Other is an upstream release name, convert to downstream version number
+                elif other.vstring in constants.SORTED_UPSTREAM_RELEASES:
+                    # need to compare upstream release string to downstream version
+                    map_version = constants.UPSTREAM_DOWNSTREAM_MAPPING.get(other.vstring)
+                    return self.version < [int(s) for s in map_version.split('.')]
+                else:
+                    # handles component list comparison and both versions upstream
+                    return self.version < other.version
             # Use suffixes to decide
             if self.suffix is None and other.suffix is None:
                 # No suffix, the same
