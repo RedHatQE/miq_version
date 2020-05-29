@@ -4,21 +4,18 @@ from datetime import date, datetime
 import attr
 import requests
 from cached_property import cached_property
-from collections import namedtuple
 from functools import total_ordering
 from lxml import html
 
-
-SPTuple = namedtuple('StreamProductTuple', ['stream', 'product_version', 'template_regex'])
-TemplateInfo = namedtuple('TemplateInfo', ['group_name', 'datestamp', 'stream', 'version', 'type'])
+from . import constants
 
 
 @total_ordering
 class Version(object):
     """Version class based on distutil.version.LooseVersion"""
     SUFFIXES = ('nightly', 'pre', 'alpha', 'beta', 'rc')
-    SUFFIXES_STR = "|".join(r'-{}(?:\d+(?:\.\d+)?)?'.format(suff) for suff in SUFFIXES)
-    component_re = re.compile(r'(?:\s*(\d+|[a-z]+|\.|(?:{})+$))'.format(SUFFIXES_STR))
+    SUFFIXES_STR = "|".join(rf'-{suffix}(?:\d+(?:\.\d+)?)?' for suffix in SUFFIXES)
+    component_re = re.compile(rf'(?:\s*(\d+|[a-z]+|\.|(?:{SUFFIXES_STR})+$))')
     suffix_item_re = re.compile(r'^([^0-9]+)(\d+(?:\.\d+)?)?$')
 
     def __init__(self, vstring):
@@ -37,7 +34,7 @@ class Version(object):
         # TODO separate upstream versions
         if vstring in ('master', 'latest', 'upstream'):
             vstring = 'master'
-        for upstream_series in ['fine', 'euwe', 'gaprindashvili']:
+        for upstream_series in constants.SORTED_UPSTREAM_RELEASES:
             if upstream_series in vstring:
                 vstring = upstream_series
 
@@ -100,14 +97,14 @@ class Version(object):
         return self.vstring
 
     def __repr__(self):
-        return '{}({})'.format(type(self).__name__, repr(self.vstring))
+        return f'{type(self).__name__}({repr(self.vstring)})'
 
     def __lt__(self, other):
         try:
             if not isinstance(other, type(self)):
                 other = Version(other)
         except Exception:
-            raise ValueError('Cannot compare Version to {}'.format(type(other).__name__))
+            raise ValueError(f'Cannot compare Version to {type(other).__name__}')
 
         if self == other:
             return False
@@ -117,7 +114,25 @@ class Version(object):
             return True
         else:
             if self.version != other.version:
-                return self.version < other.version
+                # handle upstream version comparisons
+                # This logic might not be the most efficient, but its readable and predictable
+                # 1. Both objects are upstream release names, make direct string comparison
+                if (self.vstring in constants.SORTED_UPSTREAM_RELEASES and
+                        other.vstring in constants.SORTED_UPSTREAM_RELEASES):
+                    return self.version < other.version
+                # 2. Self is an upstream release name, convert to downstream version number
+                elif self.vstring in constants.SORTED_UPSTREAM_RELEASES:
+                    # need to compare upstream release string to downstream version
+                    map_version = constants.UPSTREAM_DOWNSTREAM_MAPPING.get(self.vstring)
+                    return [int(s) for s in map_version.split('.')] < other.version
+                # 3. Other is an upstream release name, convert to downstream version number
+                elif other.vstring in constants.SORTED_UPSTREAM_RELEASES:
+                    # need to compare upstream release string to downstream version
+                    map_version = constants.UPSTREAM_DOWNSTREAM_MAPPING.get(other.vstring)
+                    return self.version < [int(s) for s in map_version.split('.')]
+                else:
+                    # handles component list comparison and both versions upstream
+                    return self.version < other.version
             # Use suffixes to decide
             if self.suffix is None and other.suffix is None:
                 # No suffix, the same
@@ -179,14 +194,19 @@ class Version(object):
         return ".".join(self.vstring.split(".")[:n])
 
     def stream(self):
-        for v, spt in version_stream_product_mapping.items():
+        for v, spt in constants.version_stream_product_mapping.items():
             if self.is_in_series(v):
                 return spt.stream
 
     def product_version(self):
-        for v, spt in version_stream_product_mapping.items():
+        for v, spt in constants.version_stream_product_mapping.items():
             if self.is_in_series(v):
                 return spt.product_version
+
+
+LOWEST = Version.lowest()
+LATEST = Version.latest()
+UPSTREAM = LATEST
 
 
 def get_version(obj=None):
@@ -204,103 +224,6 @@ def get_version(obj=None):
     if obj.startswith('master'):
         return Version.latest()
     return Version(obj)
-
-
-FORMATS_DOWNSTREAM = {
-    # Looks like: cfme-5.9.3.4-20180531 or cfme-5.10.0.0-pv-20171231
-    'template_with_year':
-        r'^cfme-'
-        r'(?P<ver>(?P<major>{major})\.(?P<minor>{minor})\.(?P<patch>\d+)\.(?P<build>\d+))'
-        r'-((?P<type>[\w]*)-)?'
-        r'(?P<year>\d{{4}})?(?P<month>\d{{2}})(?P<day>\d{{2}})',
-    # Looks like: cfme-59304-0131
-    'template_no_year':
-        r'^cfme-(?P<ver>{major}{minor}\d+)-(?P<month>\d{{2}})(?P<day>\d{{2}})',
-    # Looks like: docker-5.8.10.1-20180229
-    'template_docker':
-        r'^docker-'
-        r'(?P<ver>(?P<major>{major})\.?(?P<minor>{minor})\.?(?P<patch>\d+)\.?(?P<build>\d+))'
-        r'-(?P<year>\d{{4}})?(?P<month>\d{{2}})(?P<day>\d{{2}})',
-    # Looks like: s_tpl_downstream_59z_20171001 or s-appl-downstream-57z-20161231
-    'sprout':
-        r'^s(-|_)(appl|tpl)(-|_)downstream(-|_)(?P<ver>{major}{minor})z'
-        r'(-|_)(?P<year>\d{{2}})?(?P<month>\d{{2}})(?P<day>\d{{2}})',
-}
-FORMATS_UPSTREAM = {
-    # Looks like: miq-fine-20180531 or miq-euwe-2-20171231
-    'upstream_with_year':
-        r'^miq-(?P<ver>{stream}[-\w]*?)-(?P<year>\d{{4}})(?P<month>\d{{2}})(?P<day>\d{{2}})',
-    # Looks like: miq-stable-fine-4-20180315
-    'upstream_stable':
-        r'^miq-stable-(?P<ver>{stream}[-\w]*?)-(?P<year>\d{{4}})(?P<month>\d{{2}})(?P<day>\d{{2}})',
-    # Looks like: s_tpl_upstream_fine-3_20171028 or s-appl-upstream-gapri-20180411
-    'upstream_sprout':
-        r'^s(-|_)(appl|tpl)(-|_)upstream(-|_)(?P<ver>{stream}[-\w]*?)'
-        r'(-|_)(?P<year>\d{{2}})(?P<month>\d{{2}})(?P<day>\d{{2}})'
-}
-
-# Maps stream and product version to each app version
-version_stream_product_mapping = {
-    '5.2': SPTuple('downstream-52z', '3.0',
-                   [regex.format(major='5', minor='2') for regex in FORMATS_DOWNSTREAM.values()]),
-    '5.3': SPTuple('downstream-53z', '3.1',
-                   [regex.format(major='5', minor='3') for regex in FORMATS_DOWNSTREAM.values()]),
-    '5.4': SPTuple('downstream-54z', '3.2',
-                   [regex.format(major='5', minor='4') for regex in FORMATS_DOWNSTREAM.values()]),
-    '5.5': SPTuple('downstream-55z', '4.0',
-                   [regex.format(major='5', minor='5') for regex in FORMATS_DOWNSTREAM.values()]),
-    '5.6': SPTuple('downstream-56z', '4.1',
-                   [regex.format(major='5', minor='6') for regex in FORMATS_DOWNSTREAM.values()]),
-    '5.7': SPTuple('downstream-57z', '4.2',
-                   [regex.format(major='5', minor='7') for regex in FORMATS_DOWNSTREAM.values()]),
-    '5.8': SPTuple('downstream-58z', '4.5',
-                   [regex.format(major='5', minor='8') for regex in FORMATS_DOWNSTREAM.values()]),
-    '5.9': SPTuple('downstream-59z', '4.6',
-                   [regex.format(major='5', minor='9') for regex in FORMATS_DOWNSTREAM.values()]),
-    '5.10': SPTuple('downstream-510z', '4.7',
-                   [regex.format(major='5', minor='10') for regex in FORMATS_DOWNSTREAM.values()]),
-    '5.11': SPTuple('downstream-511z', '5.0',
-                    [regex.format(major='5', minor='11') for regex in FORMATS_DOWNSTREAM.values()]),
-    'darga': SPTuple('upstream-darga', 'master',
-                   [regex.format(stream='darga') for regex in FORMATS_UPSTREAM.values()]),
-    'euwe': SPTuple('upstream-euwe', 'master',
-                    [regex.format(stream='euwe') for regex in FORMATS_UPSTREAM.values()]),
-    'fine': SPTuple('upstream-fine', 'master',
-                    [regex.format(stream='fine') for regex in FORMATS_UPSTREAM.values()]),
-    'gap': SPTuple('upstream-gap', 'master',
-                   [regex.format(stream='gapri') for regex in FORMATS_UPSTREAM.values()]),
-    'master': SPTuple('upstream', 'master',
-                    [r'miq-nightly-(?P<ver>(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2}))',
-                     r'miq-(?P<ver>(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2}))',
-                     r'^s(-|_)(appl|tpl)(-|_)upstream(-|_)(stable(-|_))?'
-                     r'(?P<year>\d{2})(?P<month>\d{2})(?P<day>\d{2})'])
-}
-
-# CONSTANTS for import and use in default version picking
-LOWEST = Version.lowest()
-LATEST = Version.latest()
-# latest streams, not specific versions
-LATEST_DOWN_STREAM = [spt.stream
-                     for spt in sorted(version_stream_product_mapping.values(),
-                                       key=lambda tup: tup.product_version)
-                     if 'downstream' in spt.stream][-1]
-LATEST_UP_STREAM = [spt[0]  # the key
-                    # pass items() to the sort so that the resulting objects are the SPT tuples
-                    for spt in sorted(version_stream_product_mapping.items())
-                    # only include master versions, then ignore master to leave latest named stream
-                    if 'master' in spt[1].product_version and 'master' not in spt[0]][-1]
-UPSTREAM = LATEST
-
-
-# maps some service templates
-generic_matchers = (
-    ('sprout', r'^s_tpl'),
-    ('sprout', r'^s-tpl'),
-    ('sprout', r'^s_appl'),
-    ('sprout', r'^s-appl'),
-    ('sprout', r'^sprout_template'),
-    ('rhevm-internal', r'^raw'),
-)
 
 
 def datecheck(check_date):
@@ -376,17 +299,16 @@ class TemplateName(object):
         v = requests.get('/'.join([self.build_url, 'version']))
         if v.ok:
             # split and reform version string to be explicit and verbose+
-            match = re.search(
-                r'^(?P<major>\d)\.(?P<minor>\d{1,2})\.(?P<patch>\d{1,2})\.(?P<build>\d{1,2})',
-                v.content.decode('utf-8'))
+            match = re.search(constants.VERSION_FORMAT_DOWNSTREAM, v.content.decode('utf-8'))
             if match:
                 return '.'.join([match.group('major'),
                                  match.group('minor'),
                                  match.group('patch'),
                                  match.group('build')])
             else:
-                raise ValueError('Unable to match version string in %s/version: {}'
-                                 .format(self.build_url, v.content))
+                raise ValueError(
+                    f'Unable to match version string in {self.build_url}/version: {v.content}'
+                )
         else:
             build_dir = requests.get(self.build_url)
             link_parser = html.fromstring(build_dir.content)
@@ -397,21 +319,15 @@ class TemplateName(object):
                       if a == 'href' and l.endswith('.ova') or l.endswith('.vhd')]
             if images:
                 # pull release and its possible number (with -) from image string
-                # examples: miq-prov-fine-4-date-hash.vhd, miq-prov-gaprindashvilli-date-hash.vhd
-                match = re.search(
-                    r'manageiq-(?:[\w]+?)-(?P<release>[\w]+?)(?P<number>-\d)?-\d{''3,}',
-                    str(images[0]))
+                image = images[0]
+                match = re.search(constants.BUILD_IMAGE_FORMAT_UPSTREAM, str(image))
                 if match:
                     # if its a master image, version is 'nightly', otherwise use release+number
-                    return ('nightly'
-                            if 'master' in match.group('release')
-                            else '{}{}'.format(match.group('release')[:5], match.group('number')))
+                    return f'{match.group("release")}{match.group("number") or ""}'
                 else:
-                    raise ValueError('Unable to match version string in image file: {}'
-                                     .format(images[0]))
+                    raise ValueError(f'Unable to match version string in image file: {image}')
             else:
-                raise ValueError('No image of ova or vhd type found to parse version from in {}'
-                                 .format(self.build_url))
+                raise ValueError(f'No image of expected type found in {self.build_url}')
 
     @property
     def build_date(self):
@@ -422,7 +338,7 @@ class TemplateName(object):
                                           "%a, %d %b %Y %H:%M:%S %Z")
             return timestamp.strftime('%Y%m%d')
         else:
-            raise ValueError('{} file not found in {}'.format(self.SHA, self.build_url))
+            raise ValueError(f'{self.SHA} file not found in {self.build_url}')
 
     @property
     def build_type(self):
@@ -462,7 +378,7 @@ class TemplateName(object):
                   datestamp with be a :py:class:`datetime.date <python:datetime.date>`, or None if
                   a date can't be derived from the template name
             """
-        for stream_tuple in version_stream_product_mapping.values():
+        for stream_tuple in constants.version_stream_product_mapping.values():
             for regex in stream_tuple.template_regex:
                 matches = re.match(regex, template_name)
                 if matches:
@@ -479,15 +395,9 @@ class TemplateName(object):
                     ):  # sprout templates only have stream
                         # old template name format with no dots
                         if version.startswith('51'):
-                            version = '{}.{}.{}.{}'.format(version[0],
-                                                           version[1:3],
-                                                           version[3],
-                                                           version[4:])
+                            version = f'{version[0]}.{version[1:3]}.{version[3]}.{version[4:]}'
                         else:
-                            version = '{}.{}.{}.{}'.format(version[0],
-                                                           version[1],
-                                                           version[2],
-                                                           version[3:])
+                            version = f'{version[0]}.{version[1]}.{version[2]}.{version[3:]}'
 
                     # strip - in case regex includes them, replace empty string with None
                     temp_type = groups.get('type') or None
@@ -498,14 +408,16 @@ class TemplateName(object):
                     except ValueError:
                         continue
 
-                    return TemplateInfo(stream_tuple.stream,
-                                        template_date,
-                                        True,
-                                        version,
-                                        temp_type)
-        for group_name, regex in generic_matchers:
+                    return constants.TemplateInfo(
+                        stream_tuple.stream,
+                        template_date,
+                        True,
+                        version,
+                        temp_type
+                    )
+        for group_name, regex in constants.generic_matchers:
             matches = re.match(regex, template_name)
             if matches:
-                return TemplateInfo(group_name, None, False, None, None)
+                return constants.TemplateInfo(group_name, None, False, None, None)
         # If no match, unknown
-        return TemplateInfo('unknown', None, False, None, None)
+        return constants.TemplateInfo('unknown', None, False, None, None)

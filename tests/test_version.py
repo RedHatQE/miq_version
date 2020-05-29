@@ -4,7 +4,8 @@ from datetime import date
 
 from deepdiff import DeepDiff
 
-from miq_version import Version, TemplateName, datecheck, TemplateInfo
+from miq_version import Version, TemplateName, datecheck
+from miq_version.constants import TemplateInfo
 
 TODAY = date.today()
 
@@ -97,6 +98,7 @@ reverse_sorted_version = [
 GT = '>'
 LT = '<'
 EQ = '=='
+NE = '!='
 
 
 @pytest.mark.parametrize(('v1', 'op', 'v2'), [
@@ -110,7 +112,20 @@ EQ = '=='
     ('1.2.3.4-beta', LT, '1.2.3.4'),
     ('1.2.3.4-beta1', GT, '1.2.3.4-beta'),
     ('1.2.3.4-beta1.1', GT, '1.2.3.4-beta1'),
-    ('1.2.3.4-alpha-nightly', GT, '1.2.3.4-alpha')])  # TODO: This one might be discussed
+    ('1.2.3.4-alpha-nightly', GT, '1.2.3.4-alpha'),  # TODO: This one might be discussed
+    ('master', EQ, 'master'),
+    ('jansa', EQ, 'jansa'),
+    ('jansa', GT, 'ivanchuck'),
+    ('ivanchuck', GT, 'hammer'),
+    ('fine', LT, 'jansa'),
+    ('jansa', LT, 'master'),
+    ('hammer', LT, '5.11'),
+    ('jansa', GT, '5.11'),
+    ('5.12', LT, 'master'),
+    ('5.10', LT, 'master'),
+    ('5.10', NE, 'hammer'),
+    ('5.11', NE, 'ivanchuck')
+])
 def test_version(v1, op, v2):
     v1 = Version(v1)
     v2 = Version(v2)
@@ -127,6 +142,8 @@ def test_version(v1, op, v2):
         # to exercise all
         assert v1 <= v2
         assert v1 >= v2
+    elif op == NE:
+        assert v1 != v2
 
 
 def test_version_list():
@@ -137,6 +154,10 @@ def test_version_list():
     ('master', 'master', 'upstream'),
     ('euwe', 'euwe', 'upstream-euwe'),
     ('fine', 'fine', 'upstream-fine'),
+    ('gaprindashvili', 'gaprindashvili', 'upstream-gaprindashvili'),
+    ('hammer', 'hammer', 'upstream-hammer'),
+    ('ivanchuck', 'ivanchuck', 'upstream-ivanchuck'),
+    ('jansa', 'jansa', 'upstream-jansa'),
     ('5.10.0.0', '5.10', 'downstream-510z'),
     ('5.11.0.0', '5.11', 'downstream-511z'),
 ])
@@ -172,14 +193,14 @@ def test_version_series_stream(version, series, stream):
          ),
         ('miq-nightly-20180531',
          TemplateInfo('upstream', date(2018, 5, 31), True, '20180531', None)),
-        ('miq-darga-20151009',
-         TemplateInfo('upstream-darga', date(2015, 10, 9), True, 'darga', None)),
         ('miq-euwe-20161028',
          TemplateInfo('upstream-euwe', date(2016, 10, 28), True, 'euwe', None)),
         ('miq-fine-3-20171215',
          TemplateInfo('upstream-fine', date(2017, 12, 15), True, 'fine-3', None)),
-        ('miq-gapri-20180411',
-         TemplateInfo('upstream-gap', date(2018, 4, 11), True, 'gapri', None)),
+        ('miq-gaprindashvili-20180411',
+         TemplateInfo('upstream-gaprindashvili', date(2018, 4, 11), True, 'gaprindashvili', None)),
+        ('miq-jansa-20200528',
+         TemplateInfo('upstream-jansa', date(2020, 5, 28), True, 'jansa', None)),
         ('cfme-5.2.5.3-20180213',
          TemplateInfo('downstream-52z', date(2018, 2, 13), True, '5.2.5.3', None)),
         ('cfme-5.3.5.03-20180213',
