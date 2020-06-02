@@ -76,8 +76,8 @@ version_stream_product_mapping = {
     ),
     'hammer': SPTuple('upstream-hammer', 'hammer',
                     [regex.format(stream='hammer') for regex in FORMATS_UPSTREAM.values()]),
-    'ivanchuck': SPTuple('upstream-ivanchuck', 'ivanchuck',
-                    [regex.format(stream='ivanchuck') for regex in FORMATS_UPSTREAM.values()]),
+    'ivanchuk': SPTuple('upstream-ivanchuk', 'ivanchuk',
+                    [regex.format(stream='ivanchuk') for regex in FORMATS_UPSTREAM.values()]),
     'jansa': SPTuple('upstream-jansa', 'jansa',
                     [regex.format(stream='jansa') for regex in FORMATS_UPSTREAM.values()]),
     'master': SPTuple('upstream', 'master',
@@ -89,7 +89,7 @@ version_stream_product_mapping = {
 
 UPSTREAM_DOWNSTREAM_MAPPING = {
     'jansa': '5.12',
-    'ivanchuck': '5.11',
+    'ivanchuk': '5.11',
     'hammer': '5.10',
     'gaprindashvili': '5.9',
     'fine': '5.8',

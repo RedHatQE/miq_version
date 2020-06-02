@@ -115,16 +115,17 @@ NE = '!='
     ('1.2.3.4-alpha-nightly', GT, '1.2.3.4-alpha'),  # TODO: This one might be discussed
     ('master', EQ, 'master'),
     ('jansa', EQ, 'jansa'),
-    ('jansa', GT, 'ivanchuck'),
-    ('ivanchuck', GT, 'hammer'),
+    ('jansa', GT, 'ivanchuk'),
+    ('ivanchuk', GT, 'hammer'),
     ('fine', LT, 'jansa'),
     ('jansa', LT, 'master'),
+    ('ivanchuk-5', GT, '5.9'),
     ('hammer', LT, '5.11'),
     ('jansa', GT, '5.11'),
     ('5.12', LT, 'master'),
     ('5.10', LT, 'master'),
     ('5.10', NE, 'hammer'),
-    ('5.11', NE, 'ivanchuck')
+    ('5.11', NE, 'ivanchuk')
 ])
 def test_version(v1, op, v2):
     v1 = Version(v1)
@@ -156,7 +157,7 @@ def test_version_list():
     ('fine', 'fine', 'upstream-fine'),
     ('gaprindashvili', 'gaprindashvili', 'upstream-gaprindashvili'),
     ('hammer', 'hammer', 'upstream-hammer'),
-    ('ivanchuck', 'ivanchuck', 'upstream-ivanchuck'),
+    ('ivanchuk', 'ivanchuk', 'upstream-ivanchuk'),
     ('jansa', 'jansa', 'upstream-jansa'),
     ('5.10.0.0', '5.10', 'downstream-510z'),
     ('5.11.0.0', '5.11', 'downstream-511z'),
